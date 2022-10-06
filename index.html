@@ -27,6 +27,9 @@
         .card--container {
             width: 500px;
             margin: auto;
+            padding: 2rem 6rem;
+            border: solid 1px #c2c2c2;
+            border-radius: 10px;
         }
 
         .image {
@@ -48,6 +51,7 @@
 
         .card-container {
             margin-bottom: 2rem;
+            
         }
 
         .card h3 {
@@ -101,7 +105,7 @@
                             body: JSON.stringify({
                                 query: {},
                                 options: {
-                                    page: this.currentPage
+                                    page: this.currentPage,
                                 }
                             }),
                         })
