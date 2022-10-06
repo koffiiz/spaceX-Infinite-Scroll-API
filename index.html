@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="main">
+        <div class="card--container"> </div>
+        <div class="loader">
+            <img src="loader.gif" />
+        </div>
+
+        <div class="loader">
+            <img src="loader.gif" />
+        </div>
+
+        <div class="no-data hide">
+            <p> There no more data to be fetched </p>
+        </div>
+    </div>
+   
+
+    <style>
+        .card--container {
+            width: 500px;
+            margin: auto;
+        }
+
+        .image {
+            width: 100px;
+            height: 100px;
+            background-color: #d3d3d3;
+            flex: 1 0 20%;
+            padding: 0.5rem;
+        }
+
+        .card {
+            display: flex;
+            gap: 2rem;
+        }
+
+        h3,p {
+            margin: 0;
+        }
+
+        .card-container {
+            margin-bottom: 2rem;
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+        }
+
+        .loader {
+            display: none;
+        }
+
+        .loader.show {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image img {
+            max-width: 100%;
+        }
+
+        .no-data.hide {
+            display: none;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+        }
+
+    </style>
+    
+    <script>
+
+        (function() {
+            const spaceX = {
+                currentPage: 1,
+                isFetching: false,
+                init: function() {
+                    this.fetchData();
+                    this.infiniteScroll();
+                    console.log('dsadsa')
+                },
+                fetchData: async function() {
+                    this.showLoader();
+                    this.isFetching = true
+                    let data = await fetch('https://api.spacexdata.com/v4/launches/query', {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application.json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                query: {},
+                                options: {
+                                    page: this.currentPage
+                                }
+                            }),
+                        })
+                    
+                        let spaceData = await data.json();
+                        console.log(spaceData)
+                        if(spaceData.hasNextPage) {
+                            this.addDetails(spaceData.docs)
+                            this.isFetching = false
+                        } else {
+                            this.showNoMoreData();
+                        }
+                        this.hideLoader();
+                      
+                },
+                addDetails: function(spaceData) {
+                    console.log(spaceData)
+
+                    spaceData.forEach(data => {
+                        const newElem = document.createElement('div');
+                        newElem.classList.add('card-container')
+                        const localDate = new Date(data.date_local);
+                        const dateYear =  localDate.getFullYear();
+
+                        newElem.innerHTML =`
+                            <div class="card">  
+                                <div class="image"> 
+                                    <img src='${data.links.patch.large}' />
+                                </div>
+                                <div class="content"> 
+                                    <h3> Flight Number: (${data.flight_number}) Mission Name: ${data.name} Flight Year (${dateYear})</h3>
+                                    <p> ${data.details} </p>
+                                </div>
+                            </div>`
+
+                        document.querySelector('.card--container').appendChild(newElem);
+                    });
+                },
+                showLoader: function() {
+                    document.querySelector('.loader').classList.add('show')
+                },
+                hideLoader: function() {
+                    document.querySelector('.loader').classList.remove('show')
+                },
+                showNoMoreData: function() {
+                    document.querySelector('.no-data').classList.remove('hide')
+                },
+                infiniteScroll: function() {
+                    window.addEventListener('scroll', () => {
+                        const {
+                            scrollTop,
+                            scrollHeight,
+                            clientHeight
+                        } = document.documentElement;
+
+                        if (scrollTop + clientHeight >= scrollHeight - 10 && !this.isFetching ) {
+                           this.currentPage++;
+                           this.fetchData()
+                        }
+                    }, {
+                        passive: true
+                    });
+                }
+
+            }   
+
+            spaceX.init();
+        }())
+    </script>
+</body>
+</html>
